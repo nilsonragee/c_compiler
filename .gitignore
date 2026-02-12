@@ -1,0 +1,17 @@
+*.vcxproj.filters
+*.vcxproj.user
+
+*.tlog
+*.iobj
+*.obj
+*.fbx
+*.pdb
+*.ipch
+
+*.blend
+*.blend1
+*.png
+*.jpeg
+
+.vs/
+build/

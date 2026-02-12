@@ -1,0 +1,43 @@
+#ifndef C_COMPILER_PLATFORM_H
+#define C_COMPILER_PLATFORM_H
+
+#include "types.h"
+
+/*
+	Platform deduction.
+
+	Based on: https://github.com/cpredef/predef/blob/master/OperatingSystems.md
+	Platforms to be supported: Windows-x64, Linux-x64. -nilsoncore, 12 March 2024
+*/
+
+#if defined( _WIN32 )
+	#define C_COMPILER_PLATFORM_WINDOWS 1
+#elif defined( __linux__ ) || defined( __gnu_linux )
+	//     __linux__: Linux kernel (GNU/Linux and Android)
+	// __gnu_linux__: GNU/Linux
+	#define C_COMPILER_PLATFORM_LINUX 1
+#else
+	#error Unsupported platform.
+#endif
+
+/*
+	Debug build functionality.
+*/
+
+#if defined( C_COMPILER_DEBUG )
+	// Assert in Debug build.
+	#define Assert( expression ) \
+		if ( !( expression ) ) { platform_assert_fail( #expression, "-", __FILE__, __LINE__ ); }
+
+// Assert with message in Debug build.
+	#define AssertMessage( expression, message ) \
+		if ( !( expression ) ) { platform_assert_fail( #expression, message, __FILE__, __LINE__ ); }
+#else
+	// Do nothing in Release build.
+	#define Assert( expression )
+	#define AssertMessage( expression, message )
+#endif
+
+void platform_assert_fail( const char *expression, const char *message, const char *file, long line );
+
+#endif /* C_COMPILER_PLATFORM_H */
