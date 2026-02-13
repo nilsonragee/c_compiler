@@ -1,5 +1,6 @@
-#ifndef C_COMPILER_PLATFORM_H
-#define C_COMPILER_PLATFORM_H
+#pragma once
+#ifndef C_COMPILER__PLATFORM_H
+#define C_COMPILER__PLATFORM_H
 
 #include "types.h"
 
@@ -40,4 +41,4 @@
 
 void platform_assert_fail( const char *expression, const char *message, const char *file, long line );
 
-#endif /* C_COMPILER_PLATFORM_H */
+#endif /* C_COMPILER__PLATFORM_H */

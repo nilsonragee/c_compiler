@@ -1,5 +1,5 @@
-#ifndef C_COMPILER_ARRAY_H
-#define C_COMPILER_ARRAY_H
+#ifndef C_COMPILER__ARRAY_H
+#define C_COMPILER__ARRAY_H
 
 #include "common.h"
 
@@ -74,4 +74,4 @@ void * darray_find( Dynamic_Array *darray, void *item );
 void   darray_remove_at_pointer( Dynamic_Array *darray, void *item );
 void   darray_remove_at_index( Dynamic_Array *darray, u32 item_index );
 
-#endif /* C_COMPILER_ARRAY_H */
+#endif /* C_COMPILER__ARRAY_H */

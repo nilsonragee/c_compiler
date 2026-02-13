@@ -1,5 +1,5 @@
-#ifndef QLIGHT_CONSOLE_H
-#define QLIGHT_CONSOLE_H
+#ifndef C_COMPILER__CONSOLE_H
+#define C_COMPILER__CONSOLE_H
 
 #define WIN32_LEAN_AND_MEAN
 #define NOSERVICE
@@ -39,4 +39,4 @@ void console_print_unformatted( StringView_ASCII message );
 void console_print_to_wide( HANDLE output_handle, const wchar_t *format, ... );
 void console_print_wide( const wchar_t *format_wide, ... );
 
-#endif /* QLIGHT_CONSOLE_H */
+#endif /* C_COMPILER__CONSOLE_H */

@@ -1,5 +1,5 @@
-#ifndef C_COMPILER_ALLOCATOR_H
-#define C_COMPILER_ALLOCATOR_H
+#ifndef C_COMPILER__ALLOCATOR_H
+#define C_COMPILER__ALLOCATOR_H
 
 #include "platform.h"
 
@@ -132,4 +132,4 @@ void allocators_shutdown( void );
 // Global System_Allocator
 extern Allocator *g_sys_allocator;
 
-#endif /* C_COMPILER_ALLOCATOR_H */
+#endif /* C_COMPILER__ALLOCATOR_H */

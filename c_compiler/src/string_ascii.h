@@ -1,7 +1,7 @@
-#ifndef C_COMPILER_STRING_ASCII_H
-#define C_COMPILER_STRING_ASCII_H
+#pragma once
+#ifndef C_COMPILER__STRING_ASCII_H
+#define C_COMPILER__STRING_ASCII_H
 
-// #include "string_common.h"
 #include "common.h"
 #include "array.h"
 
@@ -15,15 +15,13 @@
 
 typedef struct String_ASCII {
 	/* Dynamic_Array */
-	ARRAY_TYPE( char )
-	Dynamic_Array darray;
+	DECL_Dynamic_Array( char, darray );
 	/* String_ASCII */
 } String_ASCII;
 
 typedef struct StringView_ASCII {
 	/* Array_View */
-	ARRAY_TYPE( char )
-	Array_View base;
+	DECL_Array_View( char, base );
 	/* StringView_ASCII */
 } StringView_ASCII;
 

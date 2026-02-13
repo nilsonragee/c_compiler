@@ -1,5 +1,6 @@
-#ifndef C_COMPILER_TYPES_H
-#define C_COMPILER_TYPES_H
+#pragma once
+#ifndef C_COMPILER__TYPES_H
+#define C_COMPILER__TYPES_H
 
 #include <stdint.h>
 
@@ -40,4 +41,4 @@ enum Bool_Values {
 
 typedef       u8  bool;
 
-#endif /* C_COMPILER_TYPES_H */
+#endif /* C_COMPILER__TYPES_H */
