@@ -4,6 +4,17 @@
 #include "allocator.h"
 #include "common.h"
 
+// Disable warning complaining about different pointer type function parameters:
+// Function pointer type declaration:
+//   typedef u8 * ( *PFN_Allocator_allocate )( struct Allocator *allocator, u64 count, u64 size, Caller_Info caller );
+// Assigned function:
+//   u8 * system_allocator_allocate( System_Allocator *allocator, u64 count, u64 size, Caller_Info caller );
+//   // Allocator * <-> System_Allocator *
+// Expression:
+//   .vtable.allocate = system_allocator_allocate;
+#pragma warning( push )
+#pragma warning( disable : 4028 )  // warning C4028: formal parameter 1 different from declaration
+
 static bool power_of_2( u64 x ) {
 	// u64 x   = 4
 	//     x   = 0x100
@@ -186,3 +197,5 @@ u64 linear_allocator_occupied( Linear_Allocator *allocator ) {
 	u64 occupied = allocator->cursor - allocator->memory_start;
 	return occupied;
 }
+
+#pragma warning( pop )  // Revert C4028 supression.

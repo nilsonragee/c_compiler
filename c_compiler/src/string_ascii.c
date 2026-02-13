@@ -1,7 +1,7 @@
 #include "string_ascii.h"
 
-u64 c_string_length( const char *c_string ) {
-	u64 size = 0;
+u32 c_string_length( const char *c_string ) {
+	u32 size = 0;
 	if ( !c_string )
 		return size;
 
@@ -23,7 +23,7 @@ static StringView_ASCII string_view_impl( const char *data, u32 original_length,
 
 	StringView_ASCII view;
 	const char *view_data = data + offset;
-	view.base = array_view( view_data, sizeof( char ), view_length );
+	view.base = array_view( ( char * )view_data, sizeof( char ), view_length );
 
 	return view;
 }

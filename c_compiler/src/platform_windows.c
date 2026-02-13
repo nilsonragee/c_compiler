@@ -5,7 +5,12 @@
 #include <stdlib.h> // exit()
 
 #define WIN32_LEAN_AND_MEAN
-#define NOGDI
+#define NOSERVICE
+#define NOMCX
+#define NOIME
+// winbase.h: warning C5105: macro expansion producing 'defined' has undefined behavior
+#define MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS 0
+#undef APIENTRY
 #include <Windows.h>
 
 #define BUFFER_SIZE 2048

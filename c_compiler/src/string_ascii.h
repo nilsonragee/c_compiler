@@ -28,7 +28,7 @@ typedef struct StringView_ASCII {
 } StringView_ASCII;
 
 // Returns the length of the `c_string`.
-u64 c_string_length( const char *c_string );
+u32 c_string_length( const char *c_string );
 
 // Returns a read-only `view` inside of the other `view`, `string`, or `c_string`.
 StringView_ASCII string_subview( StringView_ASCII view, u32 offset, u32 length );
