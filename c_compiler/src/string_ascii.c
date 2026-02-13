@@ -259,6 +259,26 @@ bool string_free( String_ASCII *string, bool zero_memory ) {
 	return darray_free( &string->darray, zero_memory );
 }
 
+bool char_is_alpha( char c ) {
+	bool alpha = ( c >= 'A' && c <= 'Z' ) || ( c >= 'a' && c <= 'z' );
+	return alpha;
+}
+
+bool char_is_numeric( char c ) {
+	bool numeric = ( c >= '0' && c <= '9' );
+	return numeric;
+}
+
+bool char_is_alpha_numeric( char c ) {
+	bool alpha_numeric = ( c >= '0' && c <= '9' ) || ( c >= 'A' && c <= 'Z' ) || ( c >= 'a' && c <= 'z' );
+	return alpha_numeric;
+}
+
+bool char_is_whitespace( char c ) {
+	bool whitespace = ( c == ' ' || c == '\t' || c == '\r' || c == '\n' );
+	return whitespace;
+}
+
 /*
 u32 string_add_multibyte_char(String *string, char8_t *utf8_character_array, u32 character_size_in_bytes) {
 if (string->size_in_bytes + character_size_in_bytes > string->capacity) {

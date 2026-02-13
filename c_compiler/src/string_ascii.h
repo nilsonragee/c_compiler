@@ -115,4 +115,9 @@ void string_clear( String_ASCII *string, bool zero_memory );
 // The `zero_memory` argument determines whether to fill the memory with zeroes before deallocation.
 bool string_free( String_ASCII *string, bool zero_memory );
 
-#endif /* QLIGHT_STRING_ASCII_H */
+bool char_is_alpha( char c );
+bool char_is_numeric( char c );
+bool char_is_alpha_numeric( char c );
+bool char_is_whitespace( char c );
+
+#endif /* C_COMPILER__STRING_ASCII_H */
