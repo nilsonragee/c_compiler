@@ -1,8 +1,10 @@
-#ifndef C_COMPILER_COMMON_H
-#define C_COMPILER_COMMON_H
+#pragma once
+#ifndef C_COMPILER__COMMON_H
+#define C_COMPILER__COMMON_H
 
 #include "types.h"
 #include "allocator.h"
+#include "platform.h"
 
 /*
 	ForNamedFrom( u32, i, 1, 3 ) {
@@ -171,7 +173,7 @@
 */
 #define ForItBackwards( counter_type, it_type, pointer, count )  \
 		ForBackwards( counter_type, count ) {  \
-			it_type it = pointer[ it_index ];
+			it_type it = ( ( it_type *)pointer )[ it_index ];
 
 /*
 	StringView_ASCII str = "Hello World";
@@ -197,36 +199,36 @@
 
 #define ForIt2( counter_type, it_type, pointer, count )  \
 		For2( counter_type, count ) {  \
-			it_type it2 = pointer[ it2_index ];
+			it_type it2 = ( ( it_type *)pointer )[ it_index ];
 
 #define ForIt2Deref( counter_type, it_type, pointer, count )  \
-		For( counter_type, count ) {  \
-			it_type it2 = *( it_type * )pointer[ it2_index ];
+		For2( counter_type, count ) {  \
+			it_type it2 = *( ( it_type * )pointer )[ it_index ];
 
 #define ForIt2Backwards( counter_type, it_type, pointer, count )  \
 		For2Backwards( counter_type, count ) {  \
-			it_type it2 = pointer[ it2_index ];
+			it_type it2 = ( ( it_type *)pointer )[ it_index ];
 
 #define ForItDeref2Backwards( counter_type, it_type, pointer, count )  \
 		ForBackwards( counter_type, count ) {  \
-			it_type it2 = *( it_type * )pointer[ it2_index ];
+			it_type it2 = *( ( it_type * )pointer )[ it_index ];
 
 
 #define ForIt3( counter_type, it_type, pointer, count )  \
 		For3( counter_type, count ) {  \
-			it_type it3 = pointer[ it3_index ];
+			it_type it3 = ( ( it_type *)pointer )[ it_index ];
 
 #define ForIt3Deref( counter_type, it_type, pointer, count )  \
-		For( counter_type, count ) {  \
-			it_type it3 = *( it_type * )pointer[ it3_index ];
+		For3( counter_type, count ) {  \
+			it_type it3 = *( ( it_type * )pointer )[ it_index ];
 
 #define ForIt3Backwards( counter_type, it_type, pointer, count )  \
 		For3Backwards( counter_type, count ) {  \
-			it_type it3 = pointer[ it3_index ];
+			it_type it3 = ( ( it_type *)pointer )[ it_index ];
 
 #define ForItDeref3Backwards( counter_type, it_type, pointer, count )  \
 		ForBackwards( counter_type, count ) {  \
-			it_type it3 = *( it_type * )pointer[ it3_index ];
+			it_type it3 = *( ( it_type * )pointer )[ it_index ];
 
 
 #ifndef min
@@ -239,4 +241,4 @@
 
 #define ARRAY_SIZE( array )  sizeof( array ) / sizeof( array[ 0 ] )
 
-#endif /* C_COMPILER_COMMON_H */
+#endif /* C_COMPILER__COMMON_H */
