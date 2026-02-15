@@ -48,22 +48,26 @@ typedef TypeIds TypeId;
 
 typedef enum ETypeModifierBits {
 	TypeModifierBit_Pointer = ( 1 << 0 ),
-	TypeModifietBit_ConstPointer = ( 1 << 1 ),
-	TypeModifietBit_Unsigned = ( 1 << 2 ),
-	TypeModifietBit_Static = ( 1 << 3 ),
-	TypeModifietBit_Const = ( 1 << 4 ),
-	TypeModifietBit_Volatile = ( 1 << 5 ),
-	TypeModifietBit_Restrict = ( 1 << 6 )
+	TypeModifierBit_ConstPointer = ( 1 << 1 ),
+	TypeModifierBit_Signed = ( 1 << 2 ),
+	TypeModifierBit_Unsigned = ( 1 << 3 ),
+	TypeModifierBit_Static = ( 1 << 4 ),
+	TypeModifierBit_Const = ( 1 << 5 ),
+	TypeModifierBit_Volatile = ( 1 << 6 ),
+	TypeModifierBit_Restrict = ( 1 << 7 )
 } ETypeModifierBits;
-typedef u32 TypeModifierBits;
+// typedef u32 TypeModifierBits;
+typedef ETypeModifierBits TypeModifierBits;
 
 typedef struct Type {
+	String_ASCII symbol_name;
 	TypeId id;
 	union {
 		TypeModifierBits modifiers;
 		unsigned int
 		is_pointer : 1,  // `const T *`
 		is_const_pointer : 1,  // `T *const `
+		is_signed : 1,  // `signed` is specified explicitly.
 		is_unsigned : 1,
 
 		is_static : 1,
@@ -71,6 +75,7 @@ typedef struct Type {
 		is_volatile : 1,
 		is_restrict : 1;
 	};
+	// Type *pointed_type;
 } Type;
 
 typedef enum StatementKinds {
@@ -151,6 +156,10 @@ typedef struct FunctionDefinition {
 */
 u32 type_size( Type *type );
 bool token_kind_is_type_id( TokenKind kind );
+bool token_kind_is_type_modifier( TokenKind kind );
+TypeModifierBits token_kind_to_type_modifier_bit( TokenKind kind );
+TokenKind type_modifier_bit_to_token_kind( TypeModifierBits modifiers );
+bool type_id_is_of_compound( TypeId id );
 bool type_id_is_of_integer( TypeId id );
 bool type_id_is_of_float( TypeId id );
 StringView_ASCII type_id_name( TypeId id );

@@ -30,7 +30,7 @@ u32 type_size( Type *type ) {
 		case TypeId_long_double:
 			return 16;
 		default:
-			AssertMessage( type->id >= TypeId_COUNT, "Cannot evaluate type size: unknown TypeId" );
+			AssertMessage( type->id < TypeId_COUNT, "Cannot evaluate type size: invalid TypeId" );
 			return 0;
 	}
 }
@@ -54,6 +54,47 @@ bool token_kind_is_type_id( TokenKind kind ) {
 		default:
 			return false;
 	}
+}
+
+bool token_kind_is_type_modifier( TokenKind kind );
+
+TypeModifierBits token_kind_to_type_modifier_bit( TokenKind kind ) {
+	switch ( kind ) {
+		case TokenKind_Star:  return TypeModifierBit_Pointer;
+//		case TokenKind_const:  return TypeModifierBit_ConstPointer;  // Deduce it outside of this function.
+		case TokenKind_signed:  return TypeModifierBit_Signed;
+		case TokenKind_unsigned:  return TypeModifierBit_Unsigned;
+		case TokenKind_static:  return TypeModifierBit_Static;
+		case TokenKind_const:  return TypeModifierBit_Const;
+		case TokenKind_volatile:  return TypeModifierBit_Volatile;
+		case TokenKind_restrict:  return TypeModifierBit_Restrict;
+		default:
+			AssertMessage( kind < TokenKind_COUNT, "Cannot convert TokenKind to TypeModifierBit: invalid TokenKind" );
+			return 0;
+	}
+}
+
+TokenKind type_modifier_bit_to_token_kind( TypeModifierBits modifiers ) {
+	switch ( modifiers ) {
+		case 0:  return TokenKind_COUNT;
+		case TypeModifierBit_Pointer:  return TokenKind_Star;
+		case TypeModifierBit_ConstPointer:  return TokenKind_const;  // Pointer information is lost!
+		case TypeModifierBit_Signed:  return TokenKind_signed;
+		case TypeModifierBit_Unsigned:  return TokenKind_unsigned;
+		case TypeModifierBit_Static:  return TokenKind_static;
+		case TypeModifierBit_Const:  return TokenKind_const;
+		case TypeModifierBit_Volatile:  return TokenKind_volatile;
+		case TypeModifierBit_Restrict:  return TokenKind_restrict;
+		default:
+			AssertMessage( false, "TypeModifierBit to TokenKind: invalid TypeModifierBit" );
+			return TokenKind_COUNT;
+	}
+}
+
+bool type_id_is_of_compound( TypeId id ) {
+	return ( id == TokenKind_enum ||
+		id == TokenKind_union ||
+		id == TokenKind_struct );
 }
 
 bool type_id_is_of_integer( TypeId id ) {
@@ -98,7 +139,7 @@ StringView_ASCII type_id_name( TypeId id ) {
 		case TypeId_union:  return CStrView( "union" );
 		case TypeId_struct:  return CStrView( "struct" );
 		default:
-			AssertMessage( id >= TypeId_COUNT, "Invalid TypeId" );
+			AssertMessage( id < TypeId_COUNT, "Cannot get TypeId name: invalid TypeId" );
 			return CStrView( "(unknown)" );
 	}
 }
@@ -110,6 +151,7 @@ void parser_report_info( Parser *parser, const char *format, ... ) {
 	va_start( args, format );
 	vfprintf( stdout, format, args );
 	va_end( args );
+	fputc( '\n', stdout );
 }
 
 void parser_report_warning( Parser *parser, const char *format, ... ) {
@@ -119,6 +161,7 @@ void parser_report_warning( Parser *parser, const char *format, ... ) {
 	va_start( args, format );
 	vfprintf( stdout, format, args );
 	va_end( args );
+	fputc( '\n', stdout );
 }
 
 void parser_report_error( Parser *parser, const char *format, ... ) {
@@ -128,6 +171,7 @@ void parser_report_error( Parser *parser, const char *format, ... ) {
 	va_start( args, format );
 	vfprintf( stderr, format, args );
 	va_end( args );
+	fputc( '\n', stderr );
 }
 
 Parser parser_create( Lexer *lexer ) {
@@ -142,59 +186,149 @@ Parser parser_create( Lexer *lexer ) {
 bool parser_parse_type( Parser *parser, Token *token, Type *type ) {
 	Lexer *const lexer = &parser->lexer;
 
-	/*
-	TokenKind type_modifier_tokens[] = {
-		TokenKind_short, TokenKind_long,
-		TokenKind_signed, TokenKind_unsigned,
-		TokenKind_const,
-		TokenKind_volatile,
-		TokenKind_restrict
-	};
-	DECL_Array_View( TokenKind, type_modifier_tokens_view ) = array_view( type_modifier_tokens, sizeof( TokenKind ), ARRAY_SIZE( type_modifier_tokens ) );
-
-	TokenKind type_id_tokens[] = {
-		TokenKind_void,
-		TokenKind_bool,
-		TokenKind__Bool,
-		TokenKind_char,
-		TokenKind_int,
-		TokenKind_float,
-		TokenKind_double,
-		TokenKind_enum,
-		TokenKind_struct
-	};
-	DECL_Array_View( TokenKind, type_id_tokens_view ) = array_view( type_modifier_tokens, sizeof( TokenKind ), ARRAY_SIZE( type_modifier_tokens ) );
-	*/
-
 	Type parsed_type = { 0 };
-	bool type_parsed = false;
-	// ForIt( u32, TokenKind, type_modifier_tokens_view.data, type_modifier_tokens_view.item_count ) {
-	// 	if ( it == TokenKind_short || it == TokenKind_long )  type_parsed = true;
+	bool type_specified = false;
+	while ( token->kind != TokenKind_Identifier ) {
+		if ( !type_specified ) {
+			// No TypeId was specified yet.
 
-	// }}
+			// Is it a type modifier?
+			// const, signed, unsigned, static, const, volatile, restrict
+			TypeModifierBits modifier_bit = token_kind_to_type_modifier_bit( token->kind );
+			bool is_modifier = ( modifier_bit != 0 );  // Is any modifier bit present?
+			if ( is_modifier ) {
 
-	// bool is_modifier = false;
-	// ForIt( u32, TokenKind, type_modifier_tokens_view.data, type_modifier_tokens_view.item_count ) {
-	// 	is_modifier |= ( token.kind == it );
-	// 	if ( is_modifier )  break;
-	// }}
-	switch ( token->kind ) {
-		case TokenKind_void:  parsed_type.id = TypeId_void; break;
-		case TokenKind_bool:  parsed_type.id = TypeId_bool; break;
-		case TokenKind__Bool:  parsed_type.id = TypeId_bool; break;
-		case TokenKind_char:  parsed_type.id = TypeId_char; break;
-		case TokenKind_int:  parsed_type.id = TypeId_int; break;
-		case TokenKind_float:  parsed_type.id = TypeId_float; break;
-		case TokenKind_double:  parsed_type.id = TypeId_double; break;
-		case TokenKind_enum:  parsed_type.id = TypeId_enum; break;
-		case TokenKind_union:  parsed_type.id = TypeId_union; break;
-		case TokenKind_struct:  parsed_type.id = TypeId_struct; break;
-		default:
-			parser->report_error( parser, "Unexpected type '"FMT_StrView"'.", ARG_StrView( token->view ) );
-			return false;
+				if ( parsed_type.modifiers & modifier_bit ) {
+					// Type already has this modifier.
+					parser->report_error( parser, "Declaration already has '"FMT_StrView"' specified. Only one such type specifier is allowed.",
+						ARG_StrView( token->view ) );
+					return false;
+				} else {
+					// Type does not have this modifier.
+					parsed_type.modifiers |= modifier_bit;
+				}
+
+			} else {
+
+				// Is it a type?
+				switch ( token->kind ) {
+					case TokenKind_void:  parsed_type.id = TypeId_void; type_specified = true; break;
+					case TokenKind_bool:  parsed_type.id = TypeId_bool; type_specified = true; break;
+					case TokenKind__Bool:  parsed_type.id = TypeId_bool; type_specified = true; break;
+					case TokenKind_char:  parsed_type.id = TypeId_char; type_specified = true; break;
+					case TokenKind_short:
+						if ( parsed_type.id == TypeId_short ) {
+							StringView_ASCII typeid_name = type_id_name( parsed_type.id );
+							parser->report_error( parser, "Cannot have another '"FMT_StrView"' after '"FMT_StrView"'.",
+								ARG_StrView( token->view ), ARG_StrView( typeid_name ) );
+							return false;
+						}
+
+						// (no type) -> `short (int)`
+						parsed_type.id = TypeId_short;  // Type: `short (int)`.
+						break;
+					case TokenKind_int:
+						if ( parsed_type.id == TypeId_short ) {
+							// `short (int)` -> `short int`
+							type_specified = true;
+						} else if ( parsed_type.id == TypeId_long ) {
+							// `long (int)` -> `long int`
+							type_specified = true;
+						} else if ( parsed_type.id == TypeId_longlong ) {
+							// `long long (int)` -> `long long int`
+							type_specified = true;
+						} else {
+							// (no type) -> `int`
+							parsed_type.id = TypeId_int;  // Type: `int`.
+							type_specified = true;
+						}
+						break;
+					case TokenKind_long:
+						if ( parsed_type.id == TypeId_longlong ) {
+							StringView_ASCII typeid_name = type_id_name( parsed_type.id );
+							parser->report_error( parser, "Cannot have another '"FMT_StrView"' after '"FMT_StrView"'.",
+								ARG_StrView( token->view ), ARG_StrView( typeid_name ) );
+							return false;
+						}
+
+						if ( parsed_type.id == TypeId_long ) {
+							// `long (int)` -> `long long (int)`
+							parsed_type.id = TypeId_longlong;  // Type: `long long (int)`.
+						} else {
+							// (no type) -> `long (int)`
+							parsed_type.id = TypeId_long;  // Type: `long ...?` - `long int` or `long float` or `long long (int)`.
+						}
+						break;
+					case TokenKind_float:
+						if ( parsed_type.id == TypeId_long ) {
+							// `long (int)` -> `long float`
+							// `long float` == `double`
+							parsed_type.id = TypeId_double;
+							type_specified = true;
+						} else {
+							// (no type) -> `float`.
+							parsed_type.id = TypeId_float;
+							type_specified = true;
+						}
+						break;
+					case TokenKind_double:
+						if ( parsed_type.id == TypeId_long ) {
+							// `long (int)` -> `long double`
+							parsed_type.id = TypeId_long_double;
+							type_specified = true;
+						} else {
+							// (no type) -> `double`.
+							parsed_type.id = TypeId_double;
+							type_specified = true;
+						}
+						break;
+					case TokenKind_enum:  parsed_type.id = TypeId_enum; type_specified = true; break;
+					case TokenKind_union:  parsed_type.id = TypeId_union; type_specified = true; break;
+					case TokenKind_struct:  parsed_type.id = TypeId_struct; type_specified = true; break;
+				}
+			}
+
+			// Check for `!= TypeId_void` for cases of parsed `short` and `long` type modifiers.
+			bool type_or_modifier_parsed = ( type_specified || is_modifier || parsed_type.id != TypeId_void );
+			if ( !type_or_modifier_parsed ) {
+				parser->report_error( parser, "Expected type or type modifier, but got '"FMT_StrView"'.",
+					ARG_StrView( token->view ) );
+				return false;
+			}
+
+			// At this point, type or type modifier is specified.
+			if ( type_id_is_of_compound( parsed_type.id ) ) {
+				// enum, union, struct
+				if ( !lexer_expect_next_token_kind( lexer, token, TokenKind_Identifier ) )  return false;
+				parsed_type.symbol_name = string_new_copy( g_sys_allocator, token->view );
+			}
+
+		} else /* ( !type_specified ) */ {
+			// TypeId was previously specified.
+
+			if ( token_kind_is_type_id( token->kind ) ) {
+				StringView_ASCII previous_type_id = type_id_name( parsed_type.id );
+				parser->report_error( parser, "Declaration cannot have multiple types: got '"FMT_StrView"' after '"FMT_StrView"'.",
+					ARG_StrView( token->view ), ARG_StrView( previous_type_id ) );
+				return false;
+			}
+
+			// const, signed, unsigned, static, const, volatile, restrict
+			TypeModifierBits modifier_bit = token_kind_to_type_modifier_bit( token->kind );
+			if ( parsed_type.modifiers & modifier_bit ) {
+				// Type already has this modifier.
+				parser->report_error( parser, "Declaration already has '"FMT_StrView"' specified. Only one such type specifier is allowed.",
+					ARG_StrView( token->view ) );
+				return false;
+			} else {
+				// Type does not have this modifier.
+				parsed_type.modifiers |= modifier_bit;
+			}
+		}
+
+		if ( lexer_next_token( lexer, token ) != Lexer_OK )  return false;
 	}
 
-	if ( lexer_next_token( lexer, token ) != Lexer_OK )  return false;  // Eat type tokens
 	*type = parsed_type;
 	return true;
 }
@@ -205,17 +339,13 @@ bool parser_parse_argument_list( Parser *parser, DECL_Dynamic_Array( Token, *arg
 	// Beginning of argument list
 	if ( !lexer_expect_next_token_kind( lexer, &token, TokenKind_LeftParenthesis ) )  return false;
 
-	// TokenKind expected_tokens[] = { TokenKind_LiteralNumber, TokenKind_LiteralString, TokenKind_RightParenthesis };
-	// DECL_Array_View( TokenKind, expected_tokens_view ) = array_view( expected_tokens, sizeof( TokenKind ), ARRAY_SIZE( expected_tokens ) );
 	Token next_token;
 	if ( lexer_peak_next_token( lexer, &next_token ) != Lexer_OK )  return false;
-	// if ( !lexer_expect_many_token_kinds( lexer, expected_tokens_view, &token ) )  return false;
 	while ( next_token.kind != TokenKind_RightParenthesis ) {  // End of argument list
 		if ( lexer_next_token( lexer, &token ) != Lexer_OK )  return false;
 		darray_add( arguments, &token );  // Add argument token (Only ConstantValue for now).
 
 		// Advance to next argument
-		// if ( !lexer_expect_many_token_kinds( lexer, expected_tokens_view, &token ) )  return false;
 		if ( lexer_peak_next_token( lexer, &next_token ) != Lexer_OK )  return false;
 	}
 

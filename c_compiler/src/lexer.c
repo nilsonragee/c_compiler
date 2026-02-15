@@ -194,10 +194,16 @@ comment_skip:
 		return lexer__eat_token_keyword( lexer, token, TokenKind_bool, 4, eat_token );
 	} else if ( string_view_starts_with( lexer->cursor, CStrView( "float" ) ) ) {
 		return lexer__eat_token_keyword( lexer, token, TokenKind_float, 5, eat_token );
+	} else if ( string_view_starts_with( lexer->cursor, CStrView( "long" ) ) ) {
+		return lexer__eat_token_keyword( lexer, token, TokenKind_long, 4, eat_token );
 	} else if ( string_view_starts_with( lexer->cursor, CStrView( "true" ) ) ) {
 		return lexer__eat_token_keyword( lexer, token, TokenKind_true, 4, eat_token );
 	} else if ( string_view_starts_with( lexer->cursor, CStrView( "false" ) ) ) {
 		return lexer__eat_token_keyword( lexer, token, TokenKind_false, 5, eat_token );
+	} else if ( string_view_starts_with( lexer->cursor, CStrView( "signed" ) ) ) {
+		return lexer__eat_token_keyword( lexer, token, TokenKind_signed, 6, eat_token );
+	} else if ( string_view_starts_with( lexer->cursor, CStrView( "unsigned" ) ) ) {
+		return lexer__eat_token_keyword( lexer, token, TokenKind_unsigned, 8, eat_token );
 	} else if ( char_is_numeric( **c ) ) {
 		return lexer__parse_token_literal_number( lexer, token, eat_token );
 	} else if ( char_is_alpha( **c ) ) {
@@ -214,6 +220,7 @@ void lexer_report_info( Lexer *lexer, const char *format, ... ) {
 	va_start( args, format );
 	vfprintf( stdout, format, args );
 	va_end( args );
+	fputc( '\n', stdout );
 }
 
 void lexer_report_warning( Lexer *lexer, const char *format, ... ) {
@@ -222,6 +229,7 @@ void lexer_report_warning( Lexer *lexer, const char *format, ... ) {
 	va_start( args, format );
 	vfprintf( stdout, format, args );
 	va_end( args );
+	fputc( '\n', stdout );
 }
 
 void lexer_report_error( Lexer *lexer, const char *format, ... ) {
@@ -230,6 +238,7 @@ void lexer_report_error( Lexer *lexer, const char *format, ... ) {
 	va_start( args, format );
 	vfprintf( stderr, format, args );
 	va_end( args );
+	fputc( '\n', stderr );
 }
 
 Lexer lexer_open_file( StringView_ASCII file_path ) {
